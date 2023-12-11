@@ -1,0 +1,16 @@
+{
+  "name": "testing_tasks",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {},
+  "private": true,
+  "devDependencies": {
+    "@nx/js": "17.2.0",
+    "@nx/workspace": "17.2.0",
+    "nx": "17.2.0",
+    "typescript": "^5.3.3"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+    "importSorter.importStringConfiguration.quoteMark": "single",
+    "importSorter.generalConfiguration.exclude": [".*\\.d\\.ts"],
+    "importSorter.generalConfiguration.sortOnBeforeSave": false,
+    "importSorter.sortConfiguration.joinImportPaths": false,
+    "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 120
+}

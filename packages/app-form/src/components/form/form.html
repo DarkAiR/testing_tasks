@@ -1,0 +1,182 @@
+<template>
+    <require from="../../../../components/ui/ui-input/ui-input"></require>
+    <require from="../../../../components/ui/ui-info-block/ui-info-block"></require>
+    <require from="../../../../components/ui/ui-input-phone/ui-input-phone"></require>
+    <require from="../../../../components/ui/ui-detail-counterparty/ui-detail-counterparty"></require>
+    <require from="../../../../components/ui/ui-detail-roles/ui-detail-roles"></require>
+    <require from="../../../../components/ui/ui-detail-locations/ui-detail-locations"></require>
+    <require from="../../../../components/ui/ui-edit-roles/ui-edit-roles"></require>
+    <require from="../../../../components/ui/ui-edit-counterparty/ui-edit-counterparty"></require>
+    <require from="../../../../components/ui/ui-counterparty-selection-panel/ui-counterparty-selection-panel"></require>
+    <require from="../../../../components/ui/ui-orgstructure-selection-panel/ui-orgstructure-selection-panel"></require>
+    <require from="../../../../components/ui/ui-role-selection-panel/ui-role-selection-panel"></require>
+
+    <gtc-drawer
+        ref="editPanel"
+        no-overlay
+        no-padding
+        close.trigger="onClose($event)"
+    >
+        <div slot="header">
+            ${'user.edit.title' | t}
+        </div>
+
+        <!-- Content -->
+        <div class="d-flex flex-col h-100">     <!-- h-100, чтобы не вылазило за пределы контента и не появлялись скроллеры -->
+            <div if.bind="loading" class="shim">
+                <div class="shim-overlay bg-white"></div>
+                <div class="shim-content d-flex flex-center h-100">
+                    <div class="preloader pad-l1 color-primary"></div>
+                </div>
+            </div>
+
+            <gtc-grid class="pad-v-6">
+
+                <gtc-grid size.bind="GridSize.SM" class="pad-h-6">
+                    <ui-info-block icon="account" position="middle">
+                        <ui-input
+                            label="${'form.fio.surname' | t}"
+                            value.bind="form.surname"
+                            required.bind="true"
+                            invalid.bind="formInvalidState.surname"
+                            disabled.bind="!canEditUserPersonalData()"
+                            input.delegate="onChangeInput($event, 'surname')"
+                        ></ui-input>
+                    </ui-info-block>
+
+                    <ui-info-block icon="account" position="middle">
+                        <ui-input
+                            label="${'form.fio.name' | t}"
+                            value.bind="form.name"
+                            required.bind="true"
+                            invalid.bind="formInvalidState.name"
+                            disabled.bind="!canEditUserPersonalData()"
+                            input.delegate="onChangeInput($event, 'name')"
+                        ></ui-input>
+                    </ui-info-block>
+
+                    <ui-info-block icon="account" position="middle">
+                        <ui-input
+                            label="${'form.fio.patronymic' | t}"
+                            value.bind="form.patronymic"
+                            disabled.bind="!canEditUserPersonalData()"
+                            input.delegate="onChangeInput($event, 'patronymic')"
+                        ></ui-input>
+                    </ui-info-block>
+
+                    <ui-info-block icon="phone" position="middle">
+                        <ui-input-phone
+                            label="${'form.phone' | t}"
+                            value.bind="form.phone"
+                            invalid.bind="formInvalidState.phone"
+                            disabled.bind="!canEditUserPersonalData()"
+                            input.delegate="onChangeInput($event, 'phone', $event.detail)"
+                        ></ui-input-phone>
+                    </ui-info-block>
+
+                    <ui-info-block icon="phone" position="middle">
+                        <ui-input-phone
+                            label="${'form.phone2' | t}"
+                            value.bind="form.phone2"
+                            invalid.bind="formInvalidState.phone2"
+                            disabled.bind="!canEditUserPersonalData()"
+                            input.delegate="onChangeInput($event, 'phone2', $event.detail)"
+                        ></ui-input-phone>
+                    </ui-info-block>
+
+                    <ui-info-block icon="email" position="middle">
+                        <ui-input
+                            label="${'form.email' | t}"
+                            value.bind="form.email"
+                            required.bind="true"
+                            invalid.bind="formInvalidState.email"
+                            disabled.bind="!canEditUserEmail()"
+                            input.delegate="onChangeInput($event, 'email')"
+                        ></ui-input>
+                    </ui-info-block>
+
+                    <template if.bind="canEditRoleAndComponents()">
+                        <ui-edit-counterparty
+                            if.bind="!isCounterparty()"
+                            counterparties.bind="form.counterparties"
+                            use-not-specified.bind="true"
+                            open.delegate="onOpenCounterparties()"
+                        ></ui-edit-counterparty>
+
+                        <ui-edit-roles
+                            roles.bind="form.roles"
+                            invalid.bind="formInvalidState.roles"
+                            required.bind="true"
+                            open.delegate="onOpenRoles()"
+                        ></ui-edit-roles>
+                    </template>
+                    <template else>
+                        <ui-detail-counterparty
+                            if.bind="user.counterparty"
+                            name.bind="user.counterparty.name"
+                        ></ui-detail-counterparty>
+
+                        <ui-detail-roles
+                            roles.bind="[user.role]"
+                        ></ui-detail-roles>
+                    </template>
+                </gtc-grid>
+
+                <template if.bind="canEditRoleAndComponents()">
+                    <ui-detail-locations
+                        orgstructure.bind="form.orgstructureElements"
+                        invalid.bind="formInvalidState.orgstructureElements"
+                        can-edit.bind="true"
+                        required.bind="true"
+                        message.bind="locationMessage"
+                        disabled.bind="isLocationDisabled"
+                        append.delegate="onAppendLocation($event)"
+                        remove.delegate="onRemoveLocation($event)"
+                    ></ui-detail-locations>
+                </template>
+                <template else>
+                    <ui-detail-locations
+                        orgstructure.bind="form.orgstructureElements"
+                    ></ui-detail-locations>
+                </template>
+            </gtc-grid>
+        </div>
+
+        <div slot="footer" class="text-right">
+            <gtc-group>
+                <gtc-button theme.bind="ButtonTheme.GHOST" click.delegate="onClose($event)">
+                    ${'actions:cancellation' | t}
+                </gtc-button>
+                <gtc-button click.delegate="onSubmit()" loading.bind="submitting" disabled.bind="waiting">
+                    ${'actions:save' | t}
+                </gtc-button>
+            </gtc-group>
+        </div>
+    </gtc-drawer>
+
+    <ui-role-selection-panel
+        view-model.ref="roleSelection"
+        header="${'user.edit.title' | t}"
+        selection-title="${'user.form.selectionRoles' | t}"
+        selected-roles.bind="form.roles"
+        params.bind="rolesParams"
+        changing.delegate="onChangingRoles($event)"
+    ></ui-role-selection-panel>
+
+    <ui-counterparty-selection-panel
+        view-model.ref="counterpartySelection"
+        header="${'user.edit.title' | t}"
+        selection-title="${'user.form.selectionCounterparty' | t}"
+        selection-type="single"
+        selected-counterparties.bind="form.counterparties"
+        changing.delegate="onChangingCounterparties($event)"
+    ></ui-counterparty-selection-panel>
+
+    <!-- Оргструктура всегда открыта, чтобы в слотах все отрисовалось -->
+    <ui-orgstructure-selection-panel
+        view-model.ref="orgstructureSelection"
+        counterparty-id.bind="counterpartyId"
+        close.delegate="onOrgstructureClose($event)"
+        save.delegate="onOrgstructureSelected($event)"
+    ></ui-orgstructure-selection-panel>
+</template>

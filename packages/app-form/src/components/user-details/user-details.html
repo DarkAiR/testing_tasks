@@ -1,0 +1,25 @@
+<template>
+    <gtc-panel class="w-f4">
+        <gtc-grid>
+            <div>
+                <h3>ФИО</h3>
+                <div>Имя: ${user.name || '-'}</div>
+                <div>Фамилия: ${user.surname || '-'}</div>
+                <div>Отчество: ${user.patronymic || '-'}</div>
+            </div>
+
+            <div>
+                <h3>Информация</h3>
+                <div>Адрес: ${user.address || '-'}</div>
+                <div>E-mail: ${user.email || '-'}</div>
+            </div>
+        </gtc-grid>
+
+        <div slot="footer" class="text-right">
+            <gtc-group>
+                <gtc-button theme.bind="ButtonTheme.FLAT" click.delegate="onEdit()">Редактировать</gtc-button>
+                <gtc-button>Выйти</gtc-button>
+            </gtc-group>
+        </div>
+    </gtc-panel>
+</template>
